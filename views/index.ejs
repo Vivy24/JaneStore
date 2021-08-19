@@ -1,0 +1,39 @@
+<%-include("header") -%>
+<body id="index">
+    <section>
+        <div id="circle"></div>
+        <header>
+            <a href="/" ><img id="logo" src="/image/logo.jpg"></a>
+            <ul>
+                <li><a href="/lipsticks">Lipsticks</a></li>
+                <li><a href="/masks">Masks</a></li>
+                <li><a href="/contacts">Contacts</a></li>
+                <li><a href="/cart"><i class="fas fa-shopping-cart"></i></a></li>
+            </ul>
+        </header>
+        <div class="content">
+            <div class="textBox">
+                <h2><span>J</span>ane's store</h2>
+                <h4>Selling <span>Moonshot </span>lipsticks & <span>Dr Jart+ </span>mask</h4><br>
+            </div>
+            <div class="imgBox">
+                <img src="/image/img1.png" class="indexPro">
+            </div>
+        </div>
+        <ul class="thumb">
+            <li><a href="lipsticks"><img src="/image/thumbnail2.jpg" onmouseover="imgSlider('/image/img1.png')"></a></li>
+            <li><a href="masks"><img src="/image/thumbnail1.jpg" onmouseover="imgSlider('/image/img2.png')"></a> </li>
+        </ul>
+        <ul class="sci">
+            <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
+            <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+        </ul>   
+    </section>  
+    <script type="text/javascript">
+        function imgSlider(anything){
+            document.querySelector(".indexPro").src=anything;
+
+        }
+    </script>
+</body>
+<%-include("footer") -%>
