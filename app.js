@@ -72,6 +72,61 @@ app.get("/cart", (req,res)=>{
     })
 })
 
+app.get("/cart/remove/:id/:nonce", (req,res)=>{
+  const id=req.params.id;
+  const nonce=req.params.nonce;
+  if(Security.isValidNonce(nonce,req)){
+    const message = Cart.removeFromCart(id,req.session.cart);
+    if (message==="Successfully delete"){
+      res.redirect("/cart")
+    }
+    else {
+    res.redirect("/lipsticks") }
+
+  }
+  else {
+    res.redirect("/lipsticks")
+  }
+})
+
+app.get('/cart/empty/:nonce',(req,res)=>{
+    if(Security.isValidNonce(req.params.nonce,req)){
+      Cart.emptyCart(req);
+      res.redirect("/cart");
+    }
+    else {
+      res.redirect("/lipsticks")
+    }
+})
+
+app.get("/checkout",(req,res)=>{
+  const userSession=req.session;
+  const cart=(typeof userSession.cart!=='undefined') ? userSession.cart:false;
+  res.render('checkout', {
+    pageTitle: 'Checkout',
+    cart:cart,
+    checkoutDone: false,
+  })
+})
+
+app.post("/cart/update",(req,res)=>{
+  const ids=req.body["product_id[]"];
+  const qtys=req.body["qty[]"];
+  const nonce=req.body.nonce;
+  if(Security.isValidNonce(nonce,req)){
+    const cart=(req.session.cart) ? req.session.cart:null;
+    const i= (!Array.isArray(ids)) ? [ids]:ids;
+    console.log(i)
+    const q=(!Array.isArray(qtys)) ? [qtys]:qtys;
+    console.log(q)
+    Cart.updateCart(i,q,cart);
+    res.redirect("/cart")
+  }
+  else {
+    res.redirect("/lipsticks")
+  }
+})
+
 app.post('/addlipsticks',(req,res)=>{
   const token=req.body.nonce;
   const colorValue=req.body.lipColor;
@@ -91,8 +146,7 @@ app.post('/addlipsticks',(req,res)=>{
      else{
        res.redirect('/lipsticks')
      }
-})
-
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`)
