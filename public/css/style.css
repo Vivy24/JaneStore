@@ -301,6 +301,16 @@ header ul li a {
 .cartAlert {
     margin-top: 200px;
 }
+.checkoutForm {
+    margin-top: 150px !important;
+    max-width:700px;
+}
+
+.productTable {
+    margin-top:50px !important;
+}
+
+
  
 @media (max-width: 360px){    
     #index header{
@@ -406,6 +416,8 @@ header ul li a {
         color:black;
         font-size: 1em;
     }
+    
+
 }
 
 @media (max-width: 414px){
@@ -481,9 +493,16 @@ header ul li a {
     }
 }
 
+
 @media (max-width:1080px){
     .content .textBox h2{
         font-size: 2em;
+    }
+}
+
+@media (min-width:992px){
+    .productTable {
+        margin-top:150px !important;
     }
 }
 

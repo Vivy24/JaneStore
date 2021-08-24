@@ -21,6 +21,7 @@ mongoose.connect(Config.db.url,{
 })
 
 const products=require('./lib/model/Product.js');
+const orders=require("./lib/model/Order.js");
 
 const store= new MongoDBStore({
   uri: Config.db.url,
@@ -106,7 +107,16 @@ app.get("/checkout",(req,res)=>{
     pageTitle: 'Checkout',
     cart:cart,
     checkoutDone: false,
+    nonce: Security.md5(req.sessionID + req.headers['user-agent'])
   })
+})
+
+app.post("/checkout",(req,res)=>{
+  const nonce=req.body.nonce;
+  const userId=req.sessionID;
+  if(Security.isValidNonce(nonce,req)){
+    const cart=(req.session.cart)
+  }
 })
 
 app.post("/cart/update",(req,res)=>{
@@ -116,9 +126,7 @@ app.post("/cart/update",(req,res)=>{
   if(Security.isValidNonce(nonce,req)){
     const cart=(req.session.cart) ? req.session.cart:null;
     const i= (!Array.isArray(ids)) ? [ids]:ids;
-    console.log(i)
     const q=(!Array.isArray(qtys)) ? [qtys]:qtys;
-    console.log(q)
     Cart.updateCart(i,q,cart);
     res.redirect("/cart")
   }
