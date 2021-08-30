@@ -1,4 +1,53 @@
 <%-include("header") -%>
+<% if(nonExist) {%>
+    <div id="nonExist" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Cart Sucessfully</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
+            <a href="/lipsticks"><span aria-hidden="true">&times;</span></a>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>This product is not exist or run out. DM me for more information </p>
+          </div>
+          <div class="modal-footer">  
+            <a href="/lipsticks"><button type="button" class="btn btn-primary" data-dismiss="modal">OK</button></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>  
+      $('#nonExist').modal(focus)
+    </script>
+  <%}%> 
+
+  
+<% if(showModal) {%>
+    <div id="cartPopup" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Cart Sucessfully</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
+            <a href="/lipsticks"><span aria-hidden="true">&times;</span></a>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Add to cart successfully. </p>
+          </div>
+          <div class="modal-footer">  
+            <a href="/lipsticks"><button type="button" class="btn btn-secondary" data-dismiss="modal">Continue to browse around</button></a>
+            <a href="/cart"><button type="button" class="btn btn-primary" >Go to cart</button></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>  
+      $('#cartPopup').modal(focus)
+    </script>
+  <%}%> 
 <div id="lipsticks">
     <div class="container buysection">
         <div class="row">

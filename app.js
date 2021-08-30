@@ -52,11 +52,16 @@ app.get('/', (req, res) => {
       formattedTotals:''
     }
   }
+  if (!req.session.userId){
+    req.session.userId=req.headers['user-agent']
+  }
   res.render("index.ejs")
 });
 
 app.get("/lipsticks", (req,res)=>{
-  res.render("lipsticks.ejs",{ nonce: Security.md5(req.sessionID + req.headers['user-agent'])})
+  const nonExist=req.query.nonExist;
+  const showModal=req.query.cart;
+  res.render("lipsticks.ejs",{ nonExist: nonExist, showModal: showModal ,nonce: Security.md5(req.sessionID + req.headers['user-agent'], )})
 })
 
 app.get("/masks", (req,res)=>{
@@ -103,21 +108,50 @@ app.get('/cart/empty/:nonce',(req,res)=>{
 app.get("/checkout",(req,res)=>{
   const userSession=req.session;
   const cart=(typeof userSession.cart!=='undefined') ? userSession.cart:false;
+  const message=req.query.message;
+  const showModal=req.query.ordered;
+  console.log(showModal);
   res.render('checkout', {
     pageTitle: 'Checkout',
     cart:cart,
     checkoutDone: false,
+    message:message,
+    showModal:showModal,
     nonce: Security.md5(req.sessionID + req.headers['user-agent'])
   })
 })
 
 app.post("/checkout",(req,res)=>{
   const nonce=req.body.nonce;
-  const userId=req.sessionID;
+
   if(Security.isValidNonce(nonce,req)){
-    const cart=(req.session.cart)
+      const userId=req.session.userId;
+      const cart=req.session.cart
+      const form=req.body;
+      const order= new orders({
+        userId: userId,
+        items: cart.items,
+        totals: cart.totals,
+        firstName: form.firstname,
+        lastName: form.lastname,
+        email: form.email,
+        address: `${form.address} , ${form.city} , ${form.zip}`,
+        status: "Waiting for process"
+       })
+      
+       order.save(function(err){
+          if (err){
+            console.log(err)
+          }
+       })
+
+      Cart.emptyCart(req);
+      res.redirect("/checkout?ordered=true");
   }
+
+
 })
+
 
 app.post("/cart/update",(req,res)=>{
   const ids=req.body["product_id[]"];
@@ -142,12 +176,12 @@ app.post('/addlipsticks',(req,res)=>{
   if(Security.isValidNonce(token,req) && qty>0){
      products.findOne({codeColor:colorValue}, function(err,prod){
         if(err){
-         res.redirect("/lipsticks")
+         res.redirect("/lipsticks?nonExist=true")
         }
         else{
           const cart= (req.session.cart) ? req.session.cart: null;
           Cart.addToCart(prod, qty,cart);
-          res.redirect('/cart');
+          res.redirect('/lipsticks?cart=true');
         }
        })
     }
