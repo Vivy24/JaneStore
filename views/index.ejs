@@ -1,28 +1,35 @@
-<%-include("header") -%>
+<%-include("navbar") -%>
+
 <div id="index">
-        <div class="content">
-            <div class="textBox">
-                <h2><span>J</span>ane's store</h2>
-                <h4>Selling <span>Moonshot </span>lipsticks & <span>Dr Jart+ </span>mask</h4><br>
+        <div class="container">
+        <div class="row">
+            <div class="col-xl-8 col-l">
+                <div id="textBox">
+                <img src="/image/name.png" id="storename">
+                </div>
+            <div class="thumb">
+                <a href="lipsticks"><div class="thumbnail btn" onmouseover="imgSlider('/image/img1.png')" >
+                        <p><img src="/image/thumbnail2.jpg">Click here<br>to browse lipsticks</p>                
+                    </div></a>
+                    <a href="masks"><div class="thumbnail btn" onmouseover="imgSlider('/image/img2.png')">
+                        <p ><img src="/image/thumbnail1.jpg">Click here<br>to browse masks</p>
+                    </div></a>
+                </div>
             </div>
+            <div class="col-xl-4 col-l imgsection">
+            <div id="circle"></div>
             <div class="imgBox">
                 <img src="/image/img1.png" class="indexPro">
             </div>
+            </div>
         </div>
-        <ul class="thumb">
-            <li><a href="lipsticks"><img src="/image/thumbnail2.jpg" onmouseover="imgSlider('/image/img1.png')"></a></li>
-            <li><a href="masks"><img src="/image/thumbnail1.jpg" onmouseover="imgSlider('/image/img2.png')"></a> </li>
-        </ul>
-        <ul class="sci">
-            <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-            <li><a href="#"><i class="fab fa-instagram"></i></a></li>
-        </ul>   
+        </div>
+        
+        
     </section>  
     <script type="text/javascript">
         function imgSlider(anything){
-            document.querySelector(".indexPro").src=anything;
-
-        }
+            document.querySelector(".indexPro").src=anything; }
     </script>
 </div>
 </body>

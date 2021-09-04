@@ -1,0 +1,93 @@
+<%-include("head")-%>
+<header>
+    <nav class="navbar navbar-expand-md">
+        <a class="navbar-brand" href="/" ><img id="logo" src="/image/logo.jpg"></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"><i class="fas fa-bars" style="color:#f47dbb; font-size:28px;"></i></span>
+        </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="/lipsticks">Lipsticks</a></a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/masks">Masks</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/register">Register Admin</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                  </li>
+                  </ul>
+              </div>
+        </nav>
+
+</header>
+<body>
+        <div id="cart">
+            <% if (orders && orders.length>0){ %>
+                <div  class="pre-scrollable">
+                <table class="table table-hover cartTable">
+                    <thead>          
+                        <th scope="col">Title</th>
+                        <th scope="col">Qty</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Totals</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Update</th>
+                    </thead>
+                    <tbody>
+                    <% orders.forEach(function(order){ %>
+                    <% order.items.forEach(function(item) { %>
+                        <tr class="cart-product">
+                            <td class="align-middle">
+                                <h6 class="cartText"><%= (item.title).match(/\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)/) %></h6>
+                            </td>
+                            <td class="align-middle">
+                                <h6 class="cartText"><%= item.qty %></h6>
+                            </td>            
+                    <% }); %>
+                            <td class="align-middle">
+                                <h6 class="cartText"><%= `${order.firstName} ${order.lastName}` %></h6>
+                            </td>                     
+                            <td class="align-middle">
+                                <h6 class="cartText"><%= order.address %></h6>
+                            </td>    
+                            <td class="align-middle">
+                                <h6 class="cartText"><%= order.emails %></h6>
+                            </td>                     
+                            <td class="align-middle">
+                                <h6 class="cartText"><%= order.totals %></h6>
+                            </td>     
+                            <form action="/order/update" method="POST">      
+                            <td class="align-middle">
+                                <select name="orderStatus" class="form-select" aria-label="Default select example">
+                                    <option selected><%=order.status%></option>
+                                    <option value="Waiting for processs">Waiting for process</option>
+                                    <option value="Fee received">Confirm fee received</option>
+                                    <option value="Shipping">Shipping</option>
+                                    <option value="Done">Done</option>
+                                  </select>
+                            </td>
+                            <td class="align-middle">
+                                <button type="submit">Update</button>
+                            </td>
+                            <input type="hidden" name="orderId" value=<%=order.id%> >
+                        </form>
+                        </tr>
+                    <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <% } else { %>
+                <% if (message) %>
+                    <p class="text-center cartAlert"><%=message %></p>
+            <% } %>
+        </div>
+        
+    </body>
+
+<%-include("footer")-%>

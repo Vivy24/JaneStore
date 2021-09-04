@@ -1,195 +1,307 @@
-'use strict';
+"use strict";
+
+const express = require("express");
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const MongoDBStore = require("connect-mongodb-session")(session);
+const passport=require('passport');
+const flash = require('connect-flash');
 
 
-const express = require('express');
-const session=require('express-session');
-const bodyParser=require('body-parser');
-const mongoose=require('mongoose');
-const MongoDBStore=require('connect-mongodb-session')(session);
+const Security = require("./lib/security");
+const Cart = require("./lib/cart");
+const Config = require("./lib/config.js");
+const auth=require('./lib/auth.js');
 
-const Security=require('./lib/security');
 
-const Cart=require('./lib/cart');
-const Config=require('./lib/config.js');
-
-const app=express()
+const app = express();
 const port = process.env.PORT || 8000;
 
-mongoose.connect(Config.db.url,{
-  useNewUrlParser:true,
-  useUnifiedTopology: true 
-})
-
-const products=require('./lib/model/Product.js');
-const orders=require("./lib/model/Order.js");
-
-const store= new MongoDBStore({
-  uri: Config.db.url,
-  collection: Config.db.sessions
-})
-app.set("view engine","ejs")
-app.use(express.static("public"));
-app.use(session({
-  secret: Config.secret,
-  resave: false,
-  saveUninitialized: true,
-  store:store,
-  unset:'destroy',
-  name:'shopping cart',
-  genid: (req) =>{
-    return Security.generateId()
-  }
-}))
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-
-
-app.get('/', (req, res) => {
-  if(!req.session.cart){
-    req.session.cart={
-      items:[],
-      totals:0.00,
-      formattedTotals:''
-    }
-  }
-  if (!req.session.userId){
-    req.session.userId=req.headers['user-agent']
-  }
-  res.render("index.ejs")
+mongoose.connect(Config.db.url, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: true,
 });
 
-app.get("/lipsticks", (req,res)=>{
-  const nonExist=req.query.nonExist;
-  const showModal=req.query.cart;
-  res.render("lipsticks.ejs",{ nonExist: nonExist, showModal: showModal ,nonce: Security.md5(req.sessionID + req.headers['user-agent'], )})
-})
+const products = require("./lib/model/Product.js");
+const orders = require("./lib/model/Order.js");
+const admins=require("./lib/model/Admin.js");
 
-app.get("/masks", (req,res)=>{
-  res.render("masks.ejs")
-})
+const store = new MongoDBStore({
+  uri: Config.db.url,
+  collection: Config.db.sessions,
+});
+app.set("view engine", "ejs");
+app.use(express.static("public"));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(
+  session({
+    secret: Config.secret,
+    resave: false,
+    saveUninitialized: true,
+    store: store,
+    unset: "destroy",
+    name: "shopping cart",
+    genid: (req) => {
+      return Security.generateId();
+    },
+  })
+);
 
+require('./lib/passport');
+app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.get("/cart", (req,res)=>{
-    const userSess = req.session;
-    const cart=(typeof userSess.cart !=="undefined") ? userSess.cart : false;
-    res.render('carts.ejs', {
-        cart: cart,
-        nonce: Security.md5(req.sessionID+ req.headers['user-agent'])
-    })
-})
-
-app.get("/cart/remove/:id/:nonce", (req,res)=>{
-  const id=req.params.id;
-  const nonce=req.params.nonce;
-  if(Security.isValidNonce(nonce,req)){
-    const message = Cart.removeFromCart(id,req.session.cart);
-    if (message==="Successfully delete"){
-      res.redirect("/cart")
-    }
-    else {
-    res.redirect("/lipsticks") }
-
+app.get("/", (req, res) => {
+  if (!req.session.cart) {
+    req.session.cart = {
+      items: [],
+      totals: 0.0,
+      formattedTotals: "",
+    };
   }
-  else {
-    res.redirect("/lipsticks")
-  }
-})
+  res.render("index.ejs");
+});
 
-app.get('/cart/empty/:nonce',(req,res)=>{
-    if(Security.isValidNonce(req.params.nonce,req)){
-      Cart.emptyCart(req);
+app.get("/lipsticks", (req, res) => {
+  const nonExist = req.query.nonExist;
+  const showModal = req.query.cart;
+  res.render("lipsticks.ejs", {
+    nonExist: nonExist,
+    showModal: showModal,
+    nonce: Security.md5(req.sessionID + req.headers["user-agent"]),
+  });
+});
+
+app.post("/addlipsticks", (req, res) => {
+  const token = req.body.nonce;
+  const colorValue = req.body.lipColor;
+  const qty = req.body.qty;
+  if (Security.isValidNonce(token, req) && qty > 0) {
+    products.findOne({ codeColor: colorValue }, function (err, prod) {
+      if (err) {
+        res.redirect("/lipsticks?nonExist=true");
+      } else {
+        const cart = req.session.cart ? req.session.cart : null;
+        Cart.addToCart(prod, qty, cart);
+        res.redirect("/lipsticks?cart=true");
+      }
+    });
+  } else {
+    res.redirect("/lipsticks");
+  }
+});
+
+app.get("/masks", (req, res) => {
+  res.render("masks.ejs");
+});
+
+app.get("/cart", (req, res) => {
+  const userSess = req.session;
+  const cart = typeof userSess.cart !== "undefined" ? userSess.cart : false;
+  res.render("carts.ejs", {
+    cart: cart,
+    nonce: Security.md5(req.sessionID + req.headers["user-agent"]),
+  });
+});
+app.post("/cart/update", (req, res) => {
+  const ids = req.body["product_id[]"];
+  const qtys = req.body["qty[]"];
+  const nonce = req.body.nonce;
+  if (Security.isValidNonce(nonce, req)) {
+    const cart = req.session.cart ? req.session.cart : null;
+    const i = !Array.isArray(ids) ? [ids] : ids;
+    const q = !Array.isArray(qtys) ? [qtys] : qtys;
+    Cart.updateCart(i, q, cart);
+    res.redirect("/cart");
+  } else {
+    res.redirect("/lipsticks");
+  }
+});
+
+app.get("/cart/remove/:id/:nonce", (req, res) => {
+  const id = req.params.id;
+  const nonce = req.params.nonce;
+  if (Security.isValidNonce(nonce, req)) {
+    const message = Cart.removeFromCart(id, req.session.cart);
+    if (message === "Successfully delete") {
       res.redirect("/cart");
+    } else {
+      res.redirect("/lipsticks");
     }
-    else {
-      res.redirect("/lipsticks")
-    }
-})
+  } else {
+    res.redirect("/lipsticks");
+  }
+});
 
-app.get("/checkout",(req,res)=>{
-  const userSession=req.session;
-  const cart=(typeof userSession.cart!=='undefined') ? userSession.cart:false;
-  const message=req.query.message;
-  const showModal=req.query.ordered;
-  console.log(showModal);
-  res.render('checkout', {
-    pageTitle: 'Checkout',
-    cart:cart,
+app.get("/cart/empty/:nonce", (req, res) => {
+  if (Security.isValidNonce(req.params.nonce, req)) {
+    Cart.emptyCart(req);
+    res.redirect("/cart");
+  } else {
+    res.redirect("/lipsticks");
+  }
+});
+
+app.get("/checkout", (req, res) => {
+  const userSession = req.session;
+  const cart =
+    typeof userSession.cart !== "undefined" ? userSession.cart : false;
+  const message = req.query.message;
+  const showModal = req.query.ordered;
+  res.render("checkout", {
+    pageTitle: "Checkout",
+    cart: cart,
     checkoutDone: false,
-    message:message,
-    showModal:showModal,
-    nonce: Security.md5(req.sessionID + req.headers['user-agent'])
+    message: message,
+    showModal: showModal,
+    nonce: Security.md5(req.sessionID + req.headers["user-agent"]),
+  });
+});
+
+app.post("/checkout", (req, res) => {
+  const nonce = req.body.nonce;
+
+  if (Security.isValidNonce(nonce, req)) {
+    const userId = req.sessionID;
+    const cart = req.session.cart;
+    const form = req.body;
+    const order = new orders({
+      userId: userId,
+      items: cart.items,
+      totals: cart.totals,
+      firstName: form.firstname,
+      lastName: form.lastname,
+      email: form.email,
+      address: `${form.address} , ${form.city} , ${form.zip}`,
+      status: "Waiting for process",
+    });
+
+    order.save(function (err) {
+      if (err) {
+        res.redirect(
+          "/checkout?message=There was something wrong in placing order. Please DM me to order"
+        );
+      }
+    });
+
+    Cart.emptyCart(req);
+    res.redirect("/checkout?ordered=true");
+  }
+});
+
+app.get("/tracking", (req, res) => {
+  const userId = req.sessionID;
+  const message = req.query.message;
+  if (!message) {
+    orders
+      .find({ userId: userId })
+      .sort({ status: -1 })
+      .exec(function (err, order) {
+        if (err) {
+          res.redirect("/tracking?message=Cannot find your orders");
+        } else {
+          res.render("tracking", {
+            orders: order,
+          });
+        }
+      });
+  } else {
+    res.render("tracking", {
+      orders: undefined,
+    });
+  }
+});
+
+app.get("/login",(req,res)=>{
+  const message=req.query.message
+  res.render("login",{
+    message: req.flash('error') || message
   })
 })
 
-app.post("/checkout",(req,res)=>{
-  const nonce=req.body.nonce;
-
-  if(Security.isValidNonce(nonce,req)){
-      const userId=req.session.userId;
-      const cart=req.session.cart
-      const form=req.body;
-      const order= new orders({
-        userId: userId,
-        items: cart.items,
-        totals: cart.totals,
-        firstName: form.firstname,
-        lastName: form.lastname,
-        email: form.email,
-        address: `${form.address} , ${form.city} , ${form.zip}`,
-        status: "Waiting for process"
-       })
-      
-       order.save(function(err){
-          if (err){
-            console.log(err)
-          }
-       })
-
-      Cart.emptyCart(req);
-      res.redirect("/checkout?ordered=true");
-  }
+app.post('/login',passport.authenticate('local',{successRedirect: '/admin',failureRedirect: '/login',failureFlash:true}))
 
 
-})
+// admin route (login required)
 
-
-app.post("/cart/update",(req,res)=>{
-  const ids=req.body["product_id[]"];
-  const qtys=req.body["qty[]"];
-  const nonce=req.body.nonce;
-  if(Security.isValidNonce(nonce,req)){
-    const cart=(req.session.cart) ? req.session.cart:null;
-    const i= (!Array.isArray(ids)) ? [ids]:ids;
-    const q=(!Array.isArray(qtys)) ? [qtys]:qtys;
-    Cart.updateCart(i,q,cart);
-    res.redirect("/cart")
-  }
-  else {
-    res.redirect("/lipsticks")
-  }
-})
-
-app.post('/addlipsticks',(req,res)=>{
-  const token=req.body.nonce;
-  const colorValue=req.body.lipColor;
-  const qty=req.body.qty;
-  if(Security.isValidNonce(token,req) && qty>0){
-     products.findOne({codeColor:colorValue}, function(err,prod){
-        if(err){
-         res.redirect("/lipsticks?nonExist=true")
+app.get("/admin",auth.isAdmin,(req, res) => {
+  const message = req.query.message;
+  if (!message) {
+    orders
+      .find({})
+      .sort({ status: -1 })
+      .exec(function (err, order) {
+        if (err) {
+          res.redirect("/admin?message=Error in Database");
+        } else {
+          res.render("admin", {
+            orders: order,
+            message: undefined,
+          });
         }
-        else{
-          const cart= (req.session.cart) ? req.session.cart: null;
-          Cart.addToCart(prod, qty,cart);
-          res.redirect('/lipsticks?cart=true');
-        }
-       })
-    }
-     else{
-       res.redirect('/lipsticks')
-     }
+      });
+  } else {
+    res.redirect("/admin", {
+      orders: undefined,
+      message: message,
+    });
+  }
 });
 
+app.post("/order/update", (req, res) => {
+  const orderId = req.body["orderId"];
+  const orderStatus = req.body["orderStatus"];
+  orders.findOneAndUpdate(
+    { _id: orderId },
+    { status: orderStatus },
+    function (err) {
+      if (err) {
+        console.log(err);
+      }
+    }
+  );
+  res.redirect("/admin");
+});
+
+app.get("/register",auth.isAdmin ,(req,res)=>{
+  const message=req.query.message
+  res.render("register",{
+    message: message
+  });
+})
+
+app.post("/register",(req,res)=>{
+  const username=req.body['username'].trim().toUpperCase();
+  const password=req.body['password'];
+  const confirmPassword=req.body['confirmPassword'];
+  if (password==confirmPassword){
+    const passwordHashed= Security.genPassword(password);
+    const newAdmin= new admins({
+      username: username,
+      hash: passwordHashed.hash,
+      salt: passwordHashed.salt
+    })
+    
+    newAdmin.save(function (err){
+      if(err){
+          res.redirect("/register?message=cannot save user")
+      }
+    });
+    res.redirect("/login")
+  }
+})
+
+app.get("/logout",auth.isAdmin, (req,res)=>{
+    req.logout();
+    res.redirect('/login');
+})
+
+
+
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`)
+  console.log(`Example app listening on port ${port}!`);
 });
