@@ -53,7 +53,13 @@
 .imgBox {
     margin-top:10%;
     margin-left:30%;
+    height: 30vh;
 }
+.indexPro {
+    width:600px;
+    height:650px;
+    margin-top: 10px;
+} 
 
 .imgsection {
    display: hidden !important;
