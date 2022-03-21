@@ -50,9 +50,20 @@
   color: black;
 }
 .imgBox {
+<<<<<<< HEAD
   margin-top: 10%;
   margin-left: 30%;
+=======
+    margin-top:10%;
+    margin-left:30%;
+    height: 30vh;
+>>>>>>> 1026e2351e267e33493822892fb0650ec2ec0bec
 }
+.indexPro {
+    width:600px;
+    height:650px;
+    margin-top: 10px;
+} 
 
 .imgsection {
   display: hidden !important;
