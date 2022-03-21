@@ -5,15 +5,13 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const MongoDBStore = require("connect-mongodb-session")(session);
-const passport=require('passport');
-const flash = require('connect-flash');
-
+const passport = require("passport");
+const flash = require("connect-flash");
 
 const Security = require("./lib/security");
 const Cart = require("./lib/cart");
 const Config = require("./lib/config.js");
-const auth=require('./lib/auth.js');
-
+const auth = require("./lib/auth.js");
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -26,7 +24,7 @@ mongoose.connect(Config.db.url, {
 
 const products = require("./lib/model/Product.js");
 const orders = require("./lib/model/Order.js");
-const admins=require("./lib/model/Admin.js");
+const admins = require("./lib/model/Admin.js");
 
 const store = new MongoDBStore({
   uri: Config.db.url,
@@ -50,7 +48,7 @@ app.use(
   })
 );
 
-require('./lib/passport');
+require("./lib/passport");
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -76,27 +74,47 @@ app.get("/lipsticks", (req, res) => {
   });
 });
 
-app.post("/addlipsticks", (req, res) => {
+app.post("/addproduct", (req, res) => {
   const token = req.body.nonce;
-  const colorValue = req.body.lipColor;
+  const colorValue = req.body.code;
   const qty = req.body.qty;
+  const type = req.body.type;
   if (Security.isValidNonce(token, req) && qty > 0) {
     products.findOne({ codeColor: colorValue }, function (err, prod) {
       if (err) {
-        res.redirect("/lipsticks?nonExist=true");
+        if (type == "lipstick") {
+          res.redirect("/lipsticks?nonExist=true");
+        } else {
+          res.redirect("/masks?nonExist=true");
+        }
       } else {
         const cart = req.session.cart ? req.session.cart : null;
         Cart.addToCart(prod, qty, cart);
-        res.redirect("/lipsticks?cart=true");
+        if (type == "lipstick") {
+          res.redirect("/lipsticks?cart=true");
+        } else {
+          res.redirect("/masks?cart=true");
+        }
       }
     });
   } else {
-    res.redirect("/lipsticks");
+    if (type == "lipstick") {
+      res.redirect("/lipsticks");
+    } else {
+      res.redirect("/masks");
+    }
   }
 });
 
 app.get("/masks", (req, res) => {
-  res.render("masks.ejs");
+  const nonExist = req.query.nonExist;
+  const showModal = req.query.cart;
+
+  res.render("masks.ejs", {
+    nonExist: nonExist,
+    showModal: showModal,
+    nonce: Security.md5(req.sessionID + req.headers["user-agent"]),
+  });
 });
 
 app.get("/cart", (req, res) => {
@@ -216,19 +234,25 @@ app.get("/tracking", (req, res) => {
   }
 });
 
-app.get("/login",(req,res)=>{
-  const message=req.query.message
-  res.render("login",{
-    message: req.flash('error') || message
+app.get("/login", (req, res) => {
+  const message = req.query.message;
+  res.render("login", {
+    message: req.flash("error") || message,
+  });
+});
+
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/admin",
+    failureRedirect: "/login",
+    failureFlash: true,
   })
-})
-
-app.post('/login',passport.authenticate('local',{successRedirect: '/admin',failureRedirect: '/login',failureFlash:true}))
-
+);
 
 // admin route (login required)
 
-app.get("/admin",auth.isAdmin,(req, res) => {
+app.get("/admin", auth.isAdmin, (req, res) => {
   const message = req.query.message;
   if (!message) {
     orders
@@ -267,40 +291,38 @@ app.post("/order/update", (req, res) => {
   res.redirect("/admin");
 });
 
-app.get("/register",auth.isAdmin ,(req,res)=>{
-  const message=req.query.message
-  res.render("register",{
-    message: message
+app.get("/register", auth.isAdmin, (req, res) => {
+  const message = req.query.message;
+  res.render("register", {
+    message: message,
   });
-})
+});
 
-app.post("/register",(req,res)=>{
-  const username=req.body['username'].trim().toUpperCase();
-  const password=req.body['password'];
-  const confirmPassword=req.body['confirmPassword'];
-  if (password==confirmPassword){
-    const passwordHashed= Security.genPassword(password);
-    const newAdmin= new admins({
+app.post("/register", (req, res) => {
+  const username = req.body["username"].trim().toUpperCase();
+  const password = req.body["password"];
+  const confirmPassword = req.body["confirmPassword"];
+  if (password == confirmPassword) {
+    const passwordHashed = Security.genPassword(password);
+    const newAdmin = new admins({
       username: username,
       hash: passwordHashed.hash,
-      salt: passwordHashed.salt
-    })
-    
-    newAdmin.save(function (err){
-      if(err){
-          res.redirect("/register?message=cannot save user")
+      salt: passwordHashed.salt,
+    });
+
+    newAdmin.save(function (err) {
+      if (err) {
+        res.redirect("/register?message=cannot save user");
       }
     });
-    res.redirect("/login")
+    res.redirect("/login");
   }
-})
+});
 
-app.get("/logout",auth.isAdmin, (req,res)=>{
-    req.logout();
-    res.redirect('/login');
-})
-
-
+app.get("/logout", auth.isAdmin, (req, res) => {
+  req.logout();
+  res.redirect("/login");
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);

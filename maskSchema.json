@@ -1,0 +1,43 @@
+[
+  {
+    "codeColor": 501,
+    "title": "Dr. Jart+ Dermask Brightening Solution Mask",
+    "price": 18,
+    "image": "/image/masks/brigtening.png"
+  },
+
+  {
+    "codeColor": 502,
+    "title": "Dr. Jart+ Dermask Clearing Solution Mask",
+    "price": 18,
+    "image": "/image/masks/clearing.png"
+  },
+
+  {
+    "codeColor": 503,
+    "title": "Dr. Jart+ Dermask Firming Solution Mask",
+    "price": 18,
+    "image": "/image/masks/firming.png"
+  },
+
+  {
+    "codeColor": 504,
+    "title": "Dr. Jart+ Dermask Soothing Hydra Solution Mask",
+    "price": 18,
+    "image": "/image/masks/soothing.png"
+  },
+
+  {
+    "codeColor": 505,
+    "title": "Dr. Jart+ Dermask Vital Hydra Solution Mask",
+    "price": 18,
+    "image": "/image/masks/virtual.png"
+  },
+
+  {
+    "codeColor": 506,
+    "title": "Dr. Jart+ Dermask Wrinkless Solution Mask",
+    "price": 18,
+    "image": "/image/masks/wrinkless.png"
+  }
+]
