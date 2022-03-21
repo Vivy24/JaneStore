@@ -1,185 +1,154 @@
 <%-include("navbar") -%>
-<title class=".d-none"><%=pageTitle%></title>
-<% if(showModal) {%>
-  <div id="orderPopup" class="modal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Order Sucessfully</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
-          <a href="/checkout"><span aria-hidden="true">&times;</span></a>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p>Successfully place order. </p>
-        </div>
-        <div class="modal-footer">  
-          <a href="/"><button type="button" class="btn btn-primary">Continue to browse around</button></a>
-          <a href="/tracking"><button type="button" class="btn btn-secondary" >Tracking orders</button></a>
+  <script src="/script.js" defer></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=<%= paypalClientID%>&currency=CAD"></script>
+  <title class=".d-none">
+    <%=pageTitle%>
+  </title>
+
+  <% if(showModal) {%>
+    <div id="orderPopup" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Order Sucessfully</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
+            <a href="/checkout"><span aria-hidden="true">&times;</span></a>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Successfully place order. </p>
+          </div>
+          <div class="modal-footer">
+            <a href="/"><button type="button" class="btn btn-primary">Continue to browse around</button></a>
+            <a href="/tracking"><button type="button" class="btn btn-secondary">Tracking orders</button></a>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <script>  
-    $('#orderPopup').modal(focus)
-  </script>
-<%}%> 
+    <script>
+      $('#orderPopup').modal(focus)
+    </script>
+    <%}%>
 
-<% if (!checkoutDone && !message){%> <% if(cart && cart.items.length >0) {%>
-<div class="container">
-  <div class="row">
-    <form
-      action="/checkout"
-      method="POST"
-      class="needs-validation checkoutForm"
-    >
-      <div class="col-lg">
-        <div class="form-group">
-          <label for="first-name" class="col-sm-2 control-label"
-            >First Name<span class="text-danger">*</span></label
-          >
-          <div class="col-sm-10">
-            <input
-              type="text"
-              name="firstname"
-              class="form-control"
-              id="first-name"
-              placeholder="First Name"
-              required
-            />
-          </div>
-          <div class="invalid-feedback">Please enter your first name!</div>
-        </div>
+      <% if (!checkoutDone && !message){%>
+        <% if(cart && cart.items.length>0) {%>
+          <div class="container">
+            <div class="row">
+              <form action="/checkout" method="POST" class="needs-validation checkoutForm">
+                <div class="col-lg">
+                  <div class="form-group">
+                    <label for="first-name" class="col-sm-2 control-label">First Name<span
+                        class="text-danger">*</span></label>
+                    <div class="col-sm-10">
+                      <input type="text" name="firstname" class="form-control" id="first-name" placeholder="First Name"
+                        required />
+                    </div>
+                    <div class="invalid-feedback">Please enter your first name!</div>
+                  </div>
 
-        <div class="form-group">
-          <label for="last-name" class="col-sm-2 control-label"
-            >Last Name<span class="text-danger">*</span></label
-          >
-          <div class="col-sm-10">
-            <input
-              type="text"
-              name="lastname"
-              class="form-control"
-              id="last-name"
-              placeholder="Last Name"
-              required
-            />
-          </div>
-          <div class="invalid-feedback">Please enter your last name!</div>
-        </div>
+                  <div class="form-group">
+                    <label for="last-name" class="col-sm-2 control-label">Last Name<span
+                        class="text-danger">*</span></label>
+                    <div class="col-sm-10">
+                      <input type="text" name="lastname" class="form-control" id="last-name" placeholder="Last Name"
+                        required />
+                    </div>
+                    <div class="invalid-feedback">Please enter your last name!</div>
+                  </div>
 
-        <div class="form-group">
-          <label for="email" class="col-sm-2 control-label">E-mail</label>
-          <div class="col-sm-10">
-            <input
-              type="email"
-              name="email"
-              class="form-control"
-              id="email"
-              placeholder="E-mail"
-            />
-          </div>
-        </div>
+                  <div class="form-group">
+                    <label for="email" class="col-sm-2 control-label">E-mail</label>
+                    <div class="col-sm-10">
+                      <input type="email" name="email" class="form-control" id="email" placeholder="E-mail" />
+                    </div>
+                  </div>
 
-        <div class="form-group">
-          <label for="address" class="col-sm-2 control-label"
-            >Address<span class="text-danger">*</span></label
-          >
-          <div class="col-sm-10">
-            <input
-              type="text"
-              name="address"
-              class="form-control"
-              id="address"
-              placeholder="Address"
-              required
-            />
-          </div>
-          <div class="invalid-feedback">Please enter your address!</div>
-        </div>
+                  <div class="form-group">
+                    <label for="address" class="col-sm-2 control-label">Address<span
+                        class="text-danger">*</span></label>
+                    <div class="col-sm-10">
+                      <input type="text" name="address" class="form-control" id="address" placeholder="Address"
+                        required />
+                    </div>
+                    <div class="invalid-feedback">Please enter your address!</div>
+                  </div>
 
-        <div class="form-group">
-          <label for="city" class="col-sm-2 control-label"
-            >City / Town<span class="text-danger">*</span></label
-          >
-          <div class="col-sm-10">
-            <input
-              type="text"
-              name="city"
-              class="form-control"
-              id="city"
-              placeholder="City / Town"
-              required
-            />
-          </div>
-          <div class="invalid-feedback">Please enter your city!</div>
-        </div>
+                  <div class="form-group">
+                    <label for="city" class="col-sm-2 control-label">City / Town<span
+                        class="text-danger">*</span></label>
+                    <div class="col-sm-10">
+                      <input type="text" name="city" class="form-control" id="city" placeholder="City / Town"
+                        required />
+                    </div>
+                    <div class="invalid-feedback">Please enter your city!</div>
+                  </div>
 
-        <div class="form-group">
-          <label for="zip" class="col-sm-2 control-label"
-            >ZIP code<span class="text-danger">*</span></label
-          >
-          <div class="col-sm-10">
-            <input
-              type="text"
-              name="zip"
-              class="form-control"
-              id="zip"
-              placeholder="ZIP code"
-              required
-            />
-          </div>
-          <div class="invalid-feedback">Please enter your ZIP code!</div>
-        </div>
-      </div>
-      <div class="col-lg">
-        <div class="row productTable">
-          <div class="col-md-10 col-md-offset-2">
-            <table class="cart-table table table-bordered table-striped">
-              <tbody>
-                <% cart.items.forEach(function(product) { %>
-                <tr>
-                  <td><%= product.title %></td>
-                  <td><%= product.formattedPrice %></td>
-                  <td><%= product.qty %></td>
-                </tr>
-                <% }); %>
-                <tr class="info">
-                  <td colspan="3" class="text-right">
-                    Total: <%= cart.formattedTotals %>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-10 col-md-offset-2">
-            <div class="pull-left">
-              <img src="/public/images/paypal.jpg" alt="" />
-            </div>
-            <div class="pull-right checkout-btn-wrap">
-              <input
-                type="submit"
-                value="Checkout By Paypal"
-                class="btn btn-primary btn-lg"
-              />
+                  <div class="form-group">
+                    <label for="zip" class="col-sm-2 control-label">ZIP code<span class="text-danger">*</span></label>
+                    <div class="col-sm-10">
+                      <input type="text" name="zip" class="form-control" id="zip" placeholder="ZIP code" required />
+                    </div>
+                    <div class="invalid-feedback">Please enter your ZIP code!</div>
+                  </div>
+                </div>
+                <div class="col-lg">
+                  <div class="row productTable">
+                    <div class="col-md-10 col-md-offset-2">
+                      <table class="cart-table table table-bordered table-striped">
+                        <tbody>
+                          <% cart.items.forEach(function(product) { %>
+                            <tr>
+                              <td id="title">
+                                <%= product.title %>
+
+                              </td>
+                              <td>
+                                <%= product.formattedPrice %>
+                              </td>
+                              <td>
+                                <%= product.qty %>
+                              </td>
+                            </tr>
+                            <input type="hidden" class="productId" name="product_id[]" value="<%=product.id%>">
+                            <input type="hidden" class="qty" value="<%=product.qty%>">
+                            <input type="hidden" class="price" value="<%=product.price%>">
+                            <% }); %>
+                              <tr class="info">
+                                <td colspan="3" class="text-right">
+                                  Total: <%= cart.formattedTotals %>
+                                </td>
+                              </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-10 col-md-offset-2">
+                      <div class="pull-left">
+                        <img src="/public/images/paypal.jpg" alt="" />
+                      </div>
+                      <div id="paypal-button-container"></div>
+
+                      <!-- <div class="pull-right checkout-btn-wrap">
+                        <input type="submit" value="Checkout By Paypal" class="btn btn-primary btn-lg" />
+                      </div> -->
+                    </div>
+                    <input type="hidden" name="nonce" value="<%= nonce%>" />
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
-          <input type="hidden" name="nonce" value="<%= nonce%>" />
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-<%}%> <%}%> <% if (message){%>
-<p class="text-center cartAlert">
-  <%=message%>
-</p>
-<%}%> 
-<% if ( (!cart || cart.items.length==0) && !showModal){%>
-  <p class="text-center cartAlert">
-    There are no products in your cart. Feel free to browse around
-  </p>
-<%}%>
-<%-include("footer")-%>
+          <%}%>
+            <%}%>
+              <% if (message){%>
+                <p class="text-center cartAlert">
+                  <%=message%>
+                </p>
+                <%}%>
+                  <% if ( (!cart || cart.items.length==0) && !showModal){%>
+                    <p class="text-center cartAlert">
+                      There are no products in your cart. Feel free to browse around
+                    </p>
+                    <%}%>
+                      <%-include("footer")-%>

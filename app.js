@@ -122,6 +122,8 @@ app.get("/cart", (req, res) => {
   const cart = typeof userSess.cart !== "undefined" ? userSess.cart : false;
   res.render("carts.ejs", {
     cart: cart,
+    paypalClientID: Config.paypal.client_id,
+
     nonce: Security.md5(req.sessionID + req.headers["user-agent"]),
   });
 });
@@ -176,6 +178,7 @@ app.get("/checkout", (req, res) => {
     checkoutDone: false,
     message: message,
     showModal: showModal,
+    paypalClientID: Config.paypal.client_id,
     nonce: Security.md5(req.sessionID + req.headers["user-agent"]),
   });
 });
