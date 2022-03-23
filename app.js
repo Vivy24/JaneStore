@@ -27,7 +27,7 @@ const orders = require("./lib/model/Order.js");
 const admins = require("./lib/model/Admin.js");
 
 const store = new MongoDBStore({
-  uri: Config.db.url,
+  uri: process.env.MONGODB_URI || Config.db.url,
   collection: Config.db.sessions,
 });
 app.set("view engine", "ejs");
@@ -244,6 +244,13 @@ app.get("/login", (req, res) => {
   });
 });
 
+app.get("/guestLogin", (req, res) => {
+  passport.authenticate("local", {
+    successRedirect: "/admin",
+    failureRedirect: "/login",
+    failureFlash: true,
+  });
+});
 app.post(
   "/login",
   passport.authenticate("local", {
