@@ -7,13 +7,10 @@ const getData = async () => {
 
   qty = document.querySelectorAll(".qty");
 
-  console.log(qty);
   price = document.querySelectorAll(".price");
 
-  console.log(price);
-
   await productId.forEach((product, i) => {
-    total += Number(price[i].value);
+    total += Number(price[i].value) * Number(qty[i].value);
     const item = {
       id: product.value,
       quantity: Number(qty[i].value),
@@ -58,7 +55,7 @@ getData().then(() => {
 
           const form = document.querySelector(".checkoutForm");
           form.submit();
-        
+        });
       },
     })
     .render("#paypal-button-container");

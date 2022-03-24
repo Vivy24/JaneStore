@@ -16,20 +16,22 @@ const auth = require("./lib/auth.js");
 const app = express();
 const port = process.env.PORT || 8000;
 
+const products = require("./lib/model/Product.js");
+const orders = require("./lib/model/Order.js");
+const admins = require("./lib/model/Admin.js");
+const { clearCache } = require("ejs");
+
 mongoose.connect(Config.db.url, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useFindAndModify: true,
 });
 
-const products = require("./lib/model/Product.js");
-const orders = require("./lib/model/Order.js");
-const admins = require("./lib/model/Admin.js");
-
 const store = new MongoDBStore({
   uri: process.env.MONGODB_URI || Config.db.url,
   collection: Config.db.sessions,
 });
+
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.json());
