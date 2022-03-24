@@ -3,7 +3,6 @@ let total = 0;
 
 const getData = async () => {
   productId = document.querySelectorAll(".productId");
-  console.log(productId);
 
   qty = document.querySelectorAll(".qty");
 
@@ -20,9 +19,6 @@ const getData = async () => {
   });
 };
 getData().then(() => {
-  console.log(items);
-  console.log(total);
-
   paypal
     .Buttons({
       // Sets up the transaction when a payment button is clicked

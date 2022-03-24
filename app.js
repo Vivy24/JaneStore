@@ -1,5 +1,5 @@
 "use strict";
-
+require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const bodyParser = require("body-parser");
@@ -10,7 +10,6 @@ const flash = require("connect-flash");
 
 const Security = require("./lib/security");
 const Cart = require("./lib/cart");
-const Config = require("./lib/config.js");
 const auth = require("./lib/auth.js");
 
 const app = express();
@@ -19,17 +18,16 @@ const port = process.env.PORT || 8000;
 const products = require("./lib/model/Product.js");
 const orders = require("./lib/model/Order.js");
 const admins = require("./lib/model/Admin.js");
-const { clearCache } = require("ejs");
 
-mongoose.connect(Config.db.url, {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useFindAndModify: true,
 });
 
 const store = new MongoDBStore({
-  uri: process.env.MONGODB_URI || Config.db.url,
-  collection: Config.db.sessions,
+  uri: process.env.MONGODB_URI,
+  collection: process.env.DB_SESSIONS,
 });
 
 app.set("view engine", "ejs");
@@ -38,7 +36,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(
   session({
-    secret: Config.secret,
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
     store: store,
@@ -124,7 +122,7 @@ app.get("/cart", (req, res) => {
   const cart = typeof userSess.cart !== "undefined" ? userSess.cart : false;
   res.render("carts.ejs", {
     cart: cart,
-    paypalClientID: Config.paypal.client_id,
+    paypalClientID: process.env.PAYPAL_CLIENT_ID,
 
     nonce: Security.md5(req.sessionID + req.headers["user-agent"]),
   });
@@ -180,7 +178,7 @@ app.get("/checkout", (req, res) => {
     checkoutDone: false,
     message: message,
     showModal: showModal,
-    paypalClientID: Config.paypal.client_id,
+    paypalClientID: process.env.PAYPAL_CLIENT_ID,
     nonce: Security.md5(req.sessionID + req.headers["user-agent"]),
   });
 });
@@ -193,7 +191,6 @@ app.post("/checkout", (req, res) => {
     const cart = req.session.cart;
     const form = req.body;
 
-    console.log(cart.items);
     const order = new orders({
       userId: userId,
       items: cart.items,
