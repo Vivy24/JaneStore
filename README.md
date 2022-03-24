@@ -7,8 +7,4 @@
   #####  - Admin dashboard to upload status of order for tracking
   #####  - Has 2 differents page for products: Masks and Lipsticks. 
 ### Languages: EJS, ExpressJS and MongoDB Atlas. Styling in Bootstrap 
-### How To Start:
-  #####  1. Run npm ci
-  #####  2. Node app.js
-  #####  3. Browing through the web. 
-  
+### Deployment: https://janestore12.herokuapp.com/ (Through Heroku)
