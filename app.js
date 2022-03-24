@@ -192,6 +192,8 @@ app.post("/checkout", (req, res) => {
     const userId = req.sessionID;
     const cart = req.session.cart;
     const form = req.body;
+
+    console.log(cart.items);
     const order = new orders({
       userId: userId,
       items: cart.items,
@@ -266,6 +268,7 @@ app.post(
 
 app.get("/admin", auth.isAdmin, (req, res) => {
   const message = req.query.message;
+
   if (!message) {
     orders
       .find({})
