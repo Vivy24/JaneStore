@@ -1,8 +1,5 @@
 # Jane Store - A Small E-Commercial 
 
-# Website Address (Hosted by Heroku)
-https://janestore12.herokuapp.com/ 
-
 # Languages
 
     1. Front-end: EJS (Server Side Rendering)
