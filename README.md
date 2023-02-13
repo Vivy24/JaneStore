@@ -45,3 +45,6 @@
 
 ![Log-In](lipstickstore/admin.png)
 ![Register](lipstickstore/registerNewAdmin.png)
+
+## Admin Page
+![Register](lipstickstore/adminPage.png)
